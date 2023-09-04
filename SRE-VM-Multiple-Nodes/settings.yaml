@@ -1,0 +1,26 @@
+# Cluster Name in VB
+cluster_name : SRE-LAB
+
+network:
+  # Worker IPs are simply incremented from the Oracle IP.
+  oracle_ip: 10.0.0.10
+  docker_ip: 10.0.0.20
+  dns_servers:
+    - 8.8.8.8
+    - 1.1.1.1
+
+nodes:
+  oracle:
+    cpu: 1
+    memory: 3072
+  workers:
+    count: 1
+    cpu: 1
+    memory: 2048
+
+oracle:
+  box: oraclelinux/8
+  box_url: https://oracle.github.io/vagrant-projects/boxes/oraclelinux/8.json
+
+base-os:
+  box: bento/ubuntu-22.04

@@ -1,0 +1,156 @@
+require "yaml"
+settings = YAML.load_file "settings.yaml"
+
+VAGRANTFILE_API_VERSION = "2" 
+IP_SECTIONS = settings["network"]["oracle_ip"].match(/^([0-9.]+\.)([^.]+)$/)
+
+# First 3 octets including the trailing dot:
+IP_NW = IP_SECTIONS.captures[0]
+
+# Last octet excluding all dots:
+IP_START = Integer(IP_SECTIONS.captures[1])
+
+# Worker nodes count
+NUM_WORKER_NODES = settings["nodes"]["workers"]["count"]
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.vm.provision "shell", env: { "IP_NW" => IP_NW, "IP_START" => IP_START, "NUM_WORKER_NODES" => NUM_WORKER_NODES }, inline: <<-SHELL
+      for i in `seq 1 ${NUM_WORKER_NODES}`; do
+        echo "$IP_NW$((IP_START+i)) node0${i}" >> /etc/hosts
+      done
+  SHELL
+    
+  #config.vm.box_check_update = true
+
+  config.vm.define "oracle" do |oracle|
+    oracle.vm.hostname = "localhost"
+    oracle.vm.box = settings["oracle"]["box"]
+    oracle.vm.box_url = settings["oracle"]["box_url"]
+
+    def host_tz
+      # get host time zone for setting VM time zone
+      # if host time zone isn't an integer hour offset from GMT, fall back to UTC
+      offset_sec = Time.now.gmt_offset
+      if (offset_sec % (60 * 60)) == 0
+        offset_hr = ((offset_sec / 60) / 60)
+        timezone_suffix = offset_hr >= 0 ? "-#{offset_hr.to_s}" : "+#{(-offset_hr).to_s}"
+        'Etc/GMT' + timezone_suffix
+      else
+        'UTC'
+      end
+    end
+  
+    def default_s(key, default)
+      ENV[key] && ! ENV[key].empty? ? ENV[key] : default
+    end
+  
+    def default_i(key, default)
+      default_s(key, default).to_i
+    end
+    
+    def default_b(key, default)
+      default_s(key, default).to_s.downcase == "true"
+    end
+  
+     # VM time zone
+    VM_SYSTEM_TIMEZONE = default_s('VM_SYSTEM_TIMEZONE', host_tz)
+    
+    # Save database installer RPM file for reuse when VM is rebuilt
+    VM_KEEP_DB_INSTALLER = default_b('VM_KEEP_DB_INSTALLER', false)
+  
+    # Database character set
+    VM_ORACLE_CHARACTERSET = default_s('VM_ORACLE_CHARACTERSET', 'AL32UTF8')
+  
+    # Listener port
+    VM_LISTENER_PORT = default_i('VM_LISTENER_PORT', 1521)
+  
+    # EM Express port
+    VM_EM_EXPRESS_PORT = default_i('VM_EM_EXPRESS_PORT', 5500)
+  
+    VM_ORACLE_PWD = default_s('VM_ORACLE_PWD', 'SreLab01!')
+
+    oracle.vm.network "private_network", ip: settings["network"]["oracle_ip"]
+    oracle.vm.network "forwarded_port", guest: VM_LISTENER_PORT, host: VM_LISTENER_PORT
+    oracle.vm.network "forwarded_port", guest: VM_EM_EXPRESS_PORT, host: VM_EM_EXPRESS_PORT
+
+    oracle.vm.provider "virtualbox" do |vb|
+        vb.cpus = settings["nodes"]["oracle"]["cpu"]
+        vb.memory = settings["nodes"]["oracle"]["memory"]
+        if settings["cluster_name"] and settings["cluster_name"] != ""
+          vb.customize ["modifyvm", :id, "--groups", ("/" + settings["cluster_name"])]
+        end
+    end
+
+    
+    oracle.vm.provision "shell", path: "scripts/install.sh", env:
+    {
+       "SYSTEM_TIMEZONE"     => VM_SYSTEM_TIMEZONE,
+       "KEEP_DB_INSTALLER"   => VM_KEEP_DB_INSTALLER,
+       "ORACLE_CHARACTERSET" => VM_ORACLE_CHARACTERSET,
+       "LISTENER_PORT"       => VM_LISTENER_PORT,
+       "EM_EXPRESS_PORT"     => VM_EM_EXPRESS_PORT,
+       "ORACLE_PWD"          => VM_ORACLE_PWD
+    }
+
+    #devops.vm.provision "shell", path: "scripts/docker.sh"
+    oracle.vm.provision "shell",
+      env: {
+        "DNS_SERVERS" => settings["network"]["dns_servers"].join(" ")
+      },
+      path: "scripts/common.sh"
+      
+    #devops.vm.provision "shell", path: "scripts/visualcode.sh"
+    #devops.vm.provision "shell", path: "scripts/terraform.sh"
+    #devops.vm.provision "shell", path: "scripts/aws-cli.sh"
+
+    # Restart
+    #devops.vm.provision "shell", inline: "sudo shutdown -r now"
+  end
+
+  (1..NUM_WORKER_NODES).each do |i|
+
+    config.vm.define "node0#{i}" do |node|
+      node.vm.box = settings["base-os"]["box"]
+      node.vm.hostname = "node0#{i}"
+      node.vm.network "private_network", ip: IP_NW + "#{IP_START + i}"
+  
+      node.vm.provider "virtualbox" do |vb|
+          vb.cpus = settings["nodes"]["workers"]["cpu"]
+          vb.memory = settings["nodes"]["workers"]["memory"]
+          vb.customize ['modifyvm', :id, '--vram', '128']
+          vb.customize ["modifyvm", :id, "--clipboard-mode", "bidirectional"]
+          vb.customize ["modifyvm", :id, "--draganddrop", "bidirectional"]
+          vb.gui = true
+          if settings["cluster_name"] and settings["cluster_name"] != ""
+            vb.customize ["modifyvm", :id, "--groups", ("/" + settings["cluster_name"])]
+          end
+      end
+      
+      #node.vm.provision "shell", path: "scripts/docker.sh"
+      node.vm.provision "shell",
+        env: {
+          "DNS_SERVERS" => settings["network"]["dns_servers"].join(" ")
+        },
+        path: "scripts/common.sh"
+      node.vm.provision "shell", path: "scripts/ui.sh"    
+      # Restart
+      node.vm.provision "shell", inline: "sudo shutdown -r now" 
+    end  
+  end
+  
+  config.vm.define "docker01" do |docker|
+    docker.vm.box = settings["base-os"]["box"]
+    docker.vm.hostname = "docker01"
+    docker.vm.network "private_network", ip: settings["network"]["docker_ip"]
+  
+    docker.vm.provider "virtualbox" do |vb|
+      vb.cpus = settings["nodes"]["workers"]["cpu"]
+      vb.memory = settings["nodes"]["workers"]["memory"]
+      if settings["cluster_name"] and settings["cluster_name"] != ""
+        vb.customize ["modifyvm", :id, "--groups", ("/" + settings["cluster_name"])]
+      end
+    end
+    docker.vm.provision "shell", path: "scripts/docker.sh" 
+  end
+end
+

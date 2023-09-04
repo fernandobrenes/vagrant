@@ -1,0 +1,21 @@
+# Cluster Name in VB
+cluster_name : DevOps
+
+network:
+  # Worker IPs are simply incremented from the control IP.
+  devops_ip: 10.10.0.10
+  dns_servers:
+    - 8.8.8.8
+    - 1.1.1.1
+
+nodes:
+  devops:
+    cpu: 2
+    memory: 8192
+
+software:
+  box: bento/ubuntu-22.04
+  docker-desktop: 4.22.1
+
+disks:
+  home_disk: 10
