@@ -2,20 +2,22 @@
 cluster_name : DevOps
 
 network:
-  # Worker IPs are simply incremented from the control IP.
   devops_ip: 10.10.0.10
   dns_servers:
     - 8.8.8.8
     - 1.1.1.1
 
+vms:
+  master_vm: devops06 
 nodes:
   devops:
     cpu: 2
-    memory: 8192
+    memory: 12228
 
 software:
-  box: bento/ubuntu-22.04
-  docker-desktop: 4.22.1
+  #box: bento/ubuntu-22.04
+  box: debian/bookworm64
+  kind: v0.20.0
 
 disks:
-  home_disk: 10
+  dev_disk: 10

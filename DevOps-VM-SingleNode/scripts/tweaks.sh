@@ -1,0 +1,41 @@
+
+#! /bin/bash
+#title        :development.sh
+#description  :This script add some tweaks for Gnome
+#author       :Fernando Brenes
+#date         :2023-09-21
+#version      :1.0.0
+#notes        :This script has Gnome as dependency
+set -euxo pipefail
+
+# Regular Colors
+Black='\033[0;30m'        # Black
+Red='\033[0;31m'          # Red
+Green='\033[0;32m'        # Green
+Yellow='\033[0;33m'       # Yellow
+Blue='\033[0;34m'         # Blue
+Cyan='\033[0;36m'         # Cyan
+Color_Off='\033[0m'       # Text Reset
+
+echo -e "${Cyan}***********************************************\n
+Begin Tweaks for Gnome\n
+***********************************************${Color_Off}"
+
+OS=$(awk -F= '/^NAME/{print $2}' /etc/os-release)
+if [[ $OS == '"Ubuntu"' ]]; then
+    echo -e "${Green}Ubuntu OS Detected${Color_Off}"
+    sudo gsettings set org.gnome.desktop.session idle-delay 0
+
+elif [[ $OS == '"Debian GNU/Linux"' ]]; then
+    echo -e "${Green}Debian OS Detected${Color_Off}"
+    export DISPLAY=:0.0
+    sudo gnome-extensions enable dash-to-dock@micxgx.gmail.com
+    sudo gsettings set org.gnome.shell.extensions.dash-to-dock dock-position LEFT
+    sudo gsettings set org.gnome.desktop.session idle-delay 0
+else
+    echo -e "${Red}Uknown OS${Color_Off}"
+    exit 1
+fi
+
+
+
