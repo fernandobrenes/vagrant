@@ -19,7 +19,7 @@ IP_START = Integer(IP_SECTIONS.captures[1])
 $msg = <<MSG
 ------------------------------------------------------
 1. VM has the following share: /mnt/myshare
-2. If installed, you can access Jenkins from your local machine: http://10.10.0.10:8080
+2. If installed, you can access Jenkins from your local machine: http://10.10.0.10:8080/
 3. If installed, you can access Prometheus from your local machine: http://10.10.0.10:30900/
 4. If installed, you can access Grafana from your local machine: http://10.10.0.10:30000/
 ------------------------------------------------------

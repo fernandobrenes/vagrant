@@ -58,6 +58,7 @@ elif [[ $OS == '"Debian GNU/Linux"' ]]; then
     sudo apt install linux-headers-$(uname -r) -y
     PASSWD=vagrant
     echo "vagrant:$PASSWD" | chpasswd
+    sudo sed -i '/^PasswordAuthentication/s/no/yes/' /etc/ssh/sshd_config
 else
     echo -e "${Red}Uknown OS${Color_Off}"
     exit 1
