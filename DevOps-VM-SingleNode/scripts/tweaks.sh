@@ -29,9 +29,9 @@ if [[ $OS == '"Ubuntu"' ]]; then
 elif [[ $OS == '"Debian GNU/Linux"' ]]; then
     echo -e "${Green}Debian OS Detected${Color_Off}"
     export DISPLAY=:0.0
-    sudo gnome-extensions enable dash-to-dock@micxgx.gmail.com
-    sudo gsettings set org.gnome.shell.extensions.dash-to-dock dock-position LEFT
-    sudo gsettings set org.gnome.desktop.session idle-delay 0
+    gnome-extensions enable dash-to-panel@jderose9.github.com
+    #gsettings set org.gnome.shell.extensions.dash-to-panel panel-position 'RIGHT'
+    gsettings set org.gnome.desktop.session idle-delay 0
 else
     echo -e "${Red}Uknown OS${Color_Off}"
     exit 1

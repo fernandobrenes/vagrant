@@ -41,7 +41,6 @@ OS=$(awk -F= '/^NAME/{print $2}' /etc/os-release)
 if [[ $OS == '"Ubuntu"' ]]; then
     echo -e "${Green}Ubuntu OS Detected, installing Desktop minimal if not installed${Color_Off}"
     sudo apt install ubuntu-desktop-minimal -y
-    sudo gsettings set org.gnome.desktop.session idle-delay 0
     sudo apt install linux-headers-$(uname -r) -y
     sudo add-apt-repository universe -y
     sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
@@ -49,6 +48,9 @@ if [[ $OS == '"Ubuntu"' ]]; then
 elif [[ $OS == '"Debian GNU/Linux"' ]]; then
     echo -e "${Green}Debian OS Detected, installing KDE Plasma if not installed${Color_Off}"
     sudo apt install gnome-core -y
+    sudo apt-get install -y gnome-shell-extension-dash-to-panel
+    sudo apt install gnome-tweaks -y
+    sudo apt install dbus-x11 -y
     #sudo apt install gnome/stable -y
     #sudo apt install cinnamon-core -y
     #sudo apt install kde-plasma-desktop
