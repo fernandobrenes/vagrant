@@ -30,8 +30,9 @@ elif [[ $OS == '"Debian GNU/Linux"' ]]; then
     echo -e "${Green}Debian OS Detected${Color_Off}"
     export DISPLAY=:0.0
     gnome-extensions enable dash-to-panel@jderose9.github.com
-    #gsettings set org.gnome.shell.extensions.dash-to-panel panel-position 'RIGHT'
+    gsettings set org.gnome.shell.extensions.dash-to-panel panel-position LEFT
     gsettings set org.gnome.desktop.session idle-delay 0
+    gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"
 else
     echo -e "${Red}Uknown OS${Color_Off}"
     exit 1

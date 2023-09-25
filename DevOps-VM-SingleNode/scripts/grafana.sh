@@ -22,7 +22,6 @@ Begin Grafana\n
 
 # INSTALL GRAFANA
 # BEFORE INSTALLING WE NEED TO MAKE SURE ALL PODS IN kube-system are ready
-#sleep 60
 kubectl wait --for=condition=Ready pods --all -n kube-system --timeout=120s
 
 if [[ "`kubectl get pods --namespace default -l "app.kubernetes.io/name=grafana,app.kubernetes.io/instance=grafana" -o jsonpath="{.items[0].metadata.name}"`" ]]; then

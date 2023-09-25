@@ -35,11 +35,8 @@ if ! grep -qF "/development" /etc/fstab; then
         sudo mkdir -p /development
         echo "LABEL=development /development ext4 defaults 0 1" | sudo tee -a /etc/fstab
         sudo mount -av
-        #sudo groupadd development
-        #sudo gpasswd -a vagrant development
         sudo chgrp -R vagrant /development
         sudo chmod -R 2775 /development
-        #sudo gpasswd -a root development
     elif [[ $OS == '"Debian GNU/Linux"' ]]; then
         echo -e "${Green}Debian OS Detected${Color_Off}"
         sudo apt-get update
@@ -51,11 +48,8 @@ if ! grep -qF "/development" /etc/fstab; then
         sudo mkdir -p /development
         echo "LABEL=development /development ext4 defaults 0 1" | sudo tee -a /etc/fstab
         sudo mount -av
-        #sudo groupadd development
-        #sudo gpasswd -a vagrant development
         sudo chgrp -R vagrant /development
         sudo chmod -R 2775 /development
-        #sudo gpasswd -a root development
     else
         echo -e "${Red}Uknown OS${Color_Off}"
         exit 1

@@ -22,6 +22,8 @@ Begin Prometheus\n
 # INSTALL PROMETHEUS
 # BEFORE INSTALLING WE NEED TO MAKE SURE ALL PODS IN kube-system are ready
 #sleep 60
+sudo mkdir -p /development/grafana
+sudo chmod -R 2775 /development/grafana
 kubectl wait --for=condition=Ready pods --all -n kube-system --timeout=120s
 
 if [[ "`kubectl get pods --namespace default -l "app=kube-prometheus-stack-operator,app.kubernetes.io/instance=prometheus" -o jsonpath="{.items[0].metadata.name}"`" ]]; then
@@ -71,6 +73,7 @@ spec:
 EOF
     kubectl create -f /development/kubernetes/grafana-service.yml
     kubectl create -f /development/kubernetes/prometheus-service.yml
+    echo -e "Grafana Password: prom-operator" > /development/grafana/grafana_passwd.txt
 fi
 
 
