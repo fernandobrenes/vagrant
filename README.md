@@ -1,12 +1,12 @@
 # Vagrant VMs
 
-You can clone this repo and run the following command to bring up a VM inside DevOps-VM-SingleNode: _vagrant up --provision_
+You can clone this repo and run the following command to bring up a VM: **vagrant up --provision**, run the command inside the following folder DevOps-VM-SingleNode.
 
 # How to modify settings.yaml
 
 1. devops_ip: It defines the VM NAT IP
 2. master_vm: It defines the VM hostname
-3. cPU: It defines the amount of vCPU's assigned in Virtual Box for the VM
+3. cpu: It defines the amount of vCPU's assigned in Virtual Box for the VM
 4. memory: It defines the amount of Memory assigned in Virtual Box for the VM
 5. box: You can choose either bento/ubuntu-22.04 or debian/bookworm64
 6. dev_disk: By default, it will add a second disk to the VM of 10GB in /development so you can define here the size
