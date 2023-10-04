@@ -63,3 +63,4 @@ sudo apt install nfs-common -y
 sudo apt install unzip -y
 sudo apt install -y python3-pip
 sudo apt install build-essential libssl-dev libffi-dev python3-dev python3-venv -y
+sudo apt install vim -y
