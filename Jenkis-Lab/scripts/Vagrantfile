@@ -6,7 +6,9 @@ settings = YAML.load_file(File.join(File.dirname(__FILE__), 'settings.yaml'))
 
 DEVELOPMENT_DISK=settings["disks"]["dev_disk"]
 
-IP_SECTIONS = settings["network"]["devops_ip"].match(/^([0-9.]+\.)([^.]+)$/)
+IP = settings["network"]["vm-master01_ip"]
+
+IP_SECTIONS = settings["network"]["vm-master01_ip"].match(/^([0-9.]+\.)([^.]+)$/)
 
 VM_MASTER = settings["vms"]["master_vm"]
 
@@ -16,16 +18,27 @@ IP_NW = IP_SECTIONS.captures[0]
 # Last octet excluding all dots:
 IP_START = Integer(IP_SECTIONS.captures[1])
 
+# Avoid mismatch of VBoxGuestAdditions vs host
+def virtualbox_version()
+  vboxmanage = Vagrant::Util::Which.which("VBoxManage") || Vagrant::Util::Which.which("VBoxManage.exe")
+  if vboxmanage != nil
+      s = Vagrant::Util::Subprocess.execute(vboxmanage, '--version')
+      return s.stdout.strip!
+  else
+      return nil
+  end
+end
+VB = virtualbox_version().split(/r\d+/)[0]
+
 $msg = <<MSG
 ------------------------------------------------------
 1. VM has the following share: /mnt/myshare
-2. If installed, you can access Jenkins from your local machine: http://10.10.0.10:8080/
-3. If installed, you can access Prometheus from your local machine: http://10.10.0.10:30900/
-4. If installed, you can access Grafana from your local machine: http://10.10.0.10:30000/
+2. Machine IP: #{IP} - username: vagrant - password: vagrant
 ------------------------------------------------------
 MSG
 
 Vagrant.configure("2") do |config|
+  
   config.vm.post_up_message = $msg
   config.vm.provision "shell", env: { "IP_NW" => IP_NW, "IP_START" => IP_START, "VM_MASTER" => VM_MASTER }, inline: <<-SHELL
     if grep -q $VM_MASTER /etc/hosts; then
@@ -38,13 +51,12 @@ Vagrant.configure("2") do |config|
   config.vm.box = settings["software"]["box"]
   config.vm.box_check_update = true
   config.vm.synced_folder ".", "/mnt/myshare", type: "virtualbox"
-  config.vm.boot_timeout = 600
+  config.vm.boot_timeout = 180
   config.vm.disk :disk, name: "development", size: "#{DEVELOPMENT_DISK}GB"
 
   config.vm.define VM_MASTER do |devops|
     devops.vm.hostname = VM_MASTER
-    devops.vm.network "private_network", ip: settings["network"]["devops_ip"]
-
+    devops.vm.network "private_network", ip: settings["network"]["vm-master01_ip"]
     devops.vm.provider "virtualbox" do |vb|
         vb.cpus = settings["nodes"]["devops"]["cpu"]
         vb.memory = settings["nodes"]["devops"]["memory"]
@@ -62,23 +74,19 @@ Vagrant.configure("2") do |config|
         "DNS_SERVERS" => settings["network"]["dns_servers"].join(" ")
       },
       path: "scripts/common.sh"
-
+    devops.vm.provision "shell", path: "scripts/ui.sh"
+    devops.vm.provision "shell", inline: "echo 'Rebooting...'", reboot: true
+    devops.vm.provision "shell",
+      env: {
+        "VIRTUALBOX_VERSION" => VB
+      },
+      path: "scripts/vbchecker.sh"
+    #devops.vm.provision 'shell', inline: 'echo $?'
     devops.vm.provision "file", source: "settings.yaml", destination: "/tmp/settings.yaml"
     devops.vm.provision "shell", path: "scripts/visualcode.sh"
-    devops.vm.provision "shell", path: "scripts/terraform.sh"
-    devops.vm.provision "shell", path: "scripts/aws-cli.sh"
     devops.vm.provision "shell", path: "scripts/githubdesktop.sh"
-    devops.vm.provision "shell", path: "scripts/docker.sh"
-    devops.vm.provision "shell", inline: "echo 'Rebooting...'", reboot: true
     devops.vm.provision "shell", path: "scripts/tweaks.sh"
-    devops.vm.provision "shell", path: "scripts/jenkins.sh", privileged: false #, run: "always"
-    devops.vm.provision "shell", path: "scripts/kubernetes.sh", privileged: false #, run: "always"
-    devops.vm.provision "shell", path: "scripts/prometheus-operator.sh", privileged: false 
-    #--devops.vm.provision "shell", path: "scripts/grafana.sh", privileged: false
-    devops.vm.provision "shell", path: "scripts/openlens.sh", privileged: false
-    
-    # Restart
-    devops.vm.provision "shell", inline: "sudo shutdown -r now"
+    devops.vm.provision "shell", inline: "echo 'Rebooting...'", reboot: true
   end
 end
 

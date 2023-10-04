@@ -36,24 +36,16 @@ else
     echo -e "${Green}dns_servers.conf already exist${Color_Off}"
 fi
 
-# INSTALL UI BASED ON OS 
+# INSTALL BASIC UTILITIES 
 OS=$(awk -F= '/^NAME/{print $2}' /etc/os-release)
 if [[ $OS == '"Ubuntu"' ]]; then
-    echo -e "${Green}Ubuntu OS Detected, installing Desktop minimal if not installed${Color_Off}"
-    sudo apt install ubuntu-desktop-minimal -y
+    echo -e "${Green}Ubuntu OS Detected, installing Basic Utilities${Color_Off}"
     sudo apt install linux-headers-$(uname -r) -y
     sudo add-apt-repository universe -y
-    sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
+    sudo apt install dbus-x11 -y
 
 elif [[ $OS == '"Debian GNU/Linux"' ]]; then
     echo -e "${Green}Debian OS Detected, installing KDE Plasma if not installed${Color_Off}"
-    sudo apt install gnome-core -y
-    sudo apt-get install -y gnome-shell-extension-dash-to-panel
-    sudo apt install gnome-tweaks -y
-    sudo apt install dbus-x11 -y
-    #sudo apt install gnome/stable -y
-    #sudo apt install cinnamon-core -y
-    #sudo apt install kde-plasma-desktop
     sudo apt install git git-man liberror-perl patch curl -y
     sudo apt install linux-headers-$(uname -r) -y
     PASSWD=vagrant
@@ -65,8 +57,16 @@ else
     exit 1
 fi
 
-# BASIC UTILITIES
+# COMMON BASIC UTILITIES
 sudo timedatectl set-timezone America/Costa_Rica
 sudo apt install jq -y
 sudo apt install nfs-common -y
 sudo apt install unzip -y
+sudo apt install -y python3-pip
+sudo apt install build-essential libssl-dev libffi-dev python3-dev python3-venv -y
+
+
+
+
+
+

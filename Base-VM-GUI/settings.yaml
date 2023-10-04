@@ -1,0 +1,22 @@
+# Cluster Name in VB
+cluster_name: Base-VM-GUI
+
+network:
+  vm-master01_ip: 10.10.0.20
+  dns_servers:
+    - 8.8.8.8
+    - 1.1.1.1
+
+vms:
+  master_vm: vm-master20
+nodes:
+  devops:
+    cpu: 2
+    memory: 4096
+
+software:
+  #box: bento/ubuntu-22.04
+  box: debian/bookworm64
+
+disks:
+  dev_disk: 10
