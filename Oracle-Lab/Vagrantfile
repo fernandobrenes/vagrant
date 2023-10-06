@@ -52,6 +52,7 @@ Vagrant.configure("2") do |config|
   config.vm.box_check_update = true
   config.vm.synced_folder ".", "/mnt/myshare", type: "virtualbox"
   config.vm.boot_timeout = 180
+  config.vm.disk :disk, size: "25GB", primary: true
   config.vm.disk :disk, name: "development", size: "#{DEVELOPMENT_DISK}GB"
 
   config.vm.define VM_MASTER do |devops|
