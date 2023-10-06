@@ -89,6 +89,7 @@ Vagrant.configure("2") do |config|
     devops.vm.provision "shell", path: "scripts/tweaks.sh"
     devops.vm.provision "shell", path: "scripts/docker.sh"
     devops.vm.provision "shell", inline: "echo 'Rebooting...'", reboot: true
+    devops.vm.provision "shell", path: "scripts/oracle23.sh"
   end
 end
 
