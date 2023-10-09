@@ -50,6 +50,8 @@ if ! grep -qF "/development" /etc/fstab; then
         sudo mount -av
         sudo chgrp -R vagrant /development
         sudo chmod -R 2775 /development
+        sudo growpart /dev/sda 1
+        sudo /sbin/resize2fs /dev/sda1
     else
         echo -e "${Red}Uknown OS${Color_Off}"
         exit 1

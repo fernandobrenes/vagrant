@@ -12,7 +12,7 @@ vms:
 nodes:
   devops:
     cpu: 2
-    memory: 4096
+    memory: 8192
 
 software:
   #box: bento/ubuntu-22.04

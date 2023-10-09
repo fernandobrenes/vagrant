@@ -30,10 +30,14 @@ def virtualbox_version()
 end
 VB = virtualbox_version().split(/r\d+/)[0]
 
+SQL_DATA = "#{Dir.home}/AppData/Local/Programs/Control Tower Tools/sql_assets"
+
 $msg = <<MSG
 ------------------------------------------------------
 1. VM has the following share: /mnt/myshare
 2. Machine IP: #{IP} - username: vagrant - password: vagrant
+3. MSG schema: http://10.10.0.80:81
+4. MSM schema: http://10.10.0.80:82
 ------------------------------------------------------
 MSG
 
@@ -52,11 +56,11 @@ Vagrant.configure("2") do |config|
   config.vm.box_check_update = true
   config.vm.synced_folder ".", "/mnt/myshare", type: "virtualbox"
   config.vm.boot_timeout = 180
-  config.vm.disk :disk, size: "25GB", primary: true
   config.vm.disk :disk, name: "development", size: "#{DEVELOPMENT_DISK}GB"
 
   config.vm.define VM_MASTER do |devops|
     devops.vm.hostname = VM_MASTER
+    devops.vm.disk :disk, size: "25GB", primary: true
     devops.vm.network "private_network", ip: settings["network"]["vm-master01_ip"]
     devops.vm.provider "virtualbox" do |vb|
         vb.cpus = settings["nodes"]["devops"]["cpu"]
@@ -83,6 +87,9 @@ Vagrant.configure("2") do |config|
       },
       path: "scripts/vbchecker.sh"
     #devops.vm.provision 'shell', inline: 'echo $?'
+    devops.vm.provision "file", source: "#{SQL_DATA}/01_create_schemas.sql", destination: "/home/vagrant/01_create_schemas.sql"
+    devops.vm.provision "file", source: "#{SQL_DATA}/msg.sql", destination: "/home/vagrant/02_msg.sql"
+    devops.vm.provision "file", source: "#{SQL_DATA}/msm.sql", destination: "/home/vagrant/03_msm.sql"
     devops.vm.provision "file", source: "settings.yaml", destination: "/tmp/settings.yaml"
     devops.vm.provision "shell", path: "scripts/visualcode.sh"
     devops.vm.provision "shell", path: "scripts/githubdesktop.sh"

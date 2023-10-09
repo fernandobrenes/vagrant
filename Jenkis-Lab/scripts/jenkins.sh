@@ -22,7 +22,10 @@ Begin Jenkins\n
 
 # SAVE JENKINS CREDENTIALS IN DEVELOPMENT FOLDER
 #sudo -s -u vagrant
-sudo mkdir -p /development/jenkins
+$JENKINSPATH=/development/jenkins
+if [[ ! -d "$JENKINSPATH" ]]; then
+    sudo mkdir -p $JENKINSPATH
+fi
 sudo chmod -R 2775 /development/jenkins
 
 # INSTALL UI BASED ON OS 

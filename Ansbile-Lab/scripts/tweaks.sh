@@ -18,7 +18,7 @@ Cyan='\033[0;36m'         # Cyan
 Color_Off='\033[0m'       # Text Reset
 
 echo -e "${Cyan}***********************************************\n
-Begin Tweaks for Gnome\n
+Begin Tweaks for Gnome and Vim\n
 ***********************************************${Color_Off}"
 
 OS=$(awk -F= '/^NAME/{print $2}' /etc/os-release)
@@ -40,6 +40,30 @@ elif [[ $OS == '"Debian GNU/Linux"' ]]; then
     #gsettings set org.gnome.shell.extensions.dash-to-panel panel-position LEFT
     #gsettings set org.gnome.desktop.session idle-delay 0
     #gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"
+    VIMRC_LOCAL=/etc/vim/vimrc.local
+    if [[ ! -f "$VIMRC_LOCAL" ]]; then
+        sudo echo "unlet! skip_defaults_vim" >> /etc/vim/vimrc.local
+        sudo echo "source \$VIMRUNTIME/defaults.vim" >> /etc/vim/vimrc.local
+        sudo echo "set mouse-=a" >> /etc/vim/vimrc.local
+        sudo echo "set ts=2 sts=2 sw=2" >> /etc/vim/vimrc.local
+        sudo echo "set expandtab" >> /etc/vim/vimrc.local
+        sudo echo "set number ruler" >> /etc/vim/vimrc.local
+        sudo echo "set autoindent smartindent" >> /etc/vim/vimrc.local
+        sudo echo "filetype plugin indent on" >> /etc/vim/vimrc.local
+    fi
+
+    VIMRC=/etc/vim/vimrc.local
+    if [[ ! -f "$VIMRC" ]]; then
+        sudo echo "unlet! skip_defaults_vim" >> ~/.vimrc
+        sudo echo "source \$VIMRUNTIME/defaults.vim" >> ~/.vimrc
+        sudo echo "set mouse-=a" >> ~/.vimrc
+        sudo echo "set ts=2 sts=2 sw=2" >> ~/.vimrc
+        sudo echo "set expandtab" >> ~/.vimrc
+        sudo echo "set number ruler" >> ~/.vimrc
+        sudo echo "set autoindent smartindent" >> ~/.vimrc
+        sudo echo "filetype plugin indent on" >> ~/.vimrc
+    fi
+    
 else
     echo -e "${Red}Uknown OS${Color_Off}"
     exit 1

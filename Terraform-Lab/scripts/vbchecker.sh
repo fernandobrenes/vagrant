@@ -31,10 +31,25 @@ if [[ $OS == '"Ubuntu"' ]]; then
        echo -e "${Red}Please install latest VirtualBox version to proceed!${Color_Off}"
        exit 1
     else 
-        wget http://download.virtualbox.org/virtualbox/$VMBOX_LATEST/VBoxGuestAdditions_$VMBOX_LATEST.iso
-        sudo mkdir /media/iso
-        sudo mount VBoxGuestAdditions_$VMBOX_LATEST.iso /media/iso
-        sudo /media/iso/VBoxLinuxAdditions.run || true
+        FILE=/opt/VBoxGuestAdditions-$VMBOX_LATEST/bin/VBoxClient
+        ISOPATH=/media/iso
+        if [[ ! -f "$FILE" ]]; then
+            echo -e "${Red}Not running latest VirtualGuest version!${Color_Off}"
+            wget http://download.virtualbox.org/virtualbox/$VMBOX_LATEST/VBoxGuestAdditions_$VMBOX_LATEST.iso
+            
+            if [[ ! -d "$ISOPATH" ]]; then
+                sudo mkdir /media/iso
+            fi
+
+            sudo umount /media/iso
+            sudo mount VBoxGuestAdditions_$VMBOX_LATEST.iso /media/iso
+            sudo /media/iso/VBoxLinuxAdditions.run || true
+            sudo umount /media/iso
+            sudo rm -rf VBoxGuestAdditions_$VMBOX_LATEST.iso
+
+        else
+            echo -e "${Cyan}Running latest VirtualGuest version!${Color_Off}"
+        fi
     fi
 
 elif [[ $OS == '"Debian GNU/Linux"' ]]; then
@@ -48,12 +63,28 @@ elif [[ $OS == '"Debian GNU/Linux"' ]]; then
        echo -e "${Red}Please install latest VirtualBox version to proceed!${Color_Off}"
        exit 1
     else 
-        wget http://download.virtualbox.org/virtualbox/$VMBOX_LATEST/VBoxGuestAdditions_$VMBOX_LATEST.iso
-        sudo mkdir /media/iso
-        sudo mount VBoxGuestAdditions_$VMBOX_LATEST.iso /media/iso
-        sudo /media/iso/VBoxLinuxAdditions.run || true
-    fi
+        FILE=/opt/VBoxGuestAdditions-$VMBOX_LATEST/bin/VBoxClient
+        ISOPATH=/media/iso
+        
+        if [[ ! -f "$FILE" ]]; then
+            echo -e "${Red}Not running latest VirtualGuest version!${Color_Off}"
+            wget http://download.virtualbox.org/virtualbox/$VMBOX_LATEST/VBoxGuestAdditions_$VMBOX_LATEST.iso
+            
+            if [[ ! -d "$ISOPATH" ]]; then
+                sudo mkdir $ISOPATH
+            fi
+            if mountpoint -q $ISOPATH; then
+                sudo umount $ISOPATH
+            fi
+            sudo mount VBoxGuestAdditions_$VMBOX_LATEST.iso $ISOPATH
+            sudo $ISOPATH/VBoxLinuxAdditions.run || true
+            sudo umount $ISOPATH
+            sudo rm -rf VBoxGuestAdditions_$VMBOX_LATEST.iso
 
+        else
+            echo -e "${Cyan}Running latest VirtualGuest version!${Color_Off}"       
+        fi  
+    fi
 else
     echo -e "${Red}Uknown OS${Color_Off}"
     exit 1

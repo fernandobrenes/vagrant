@@ -22,7 +22,11 @@ Begin Prometheus\n
 # INSTALL PROMETHEUS
 # BEFORE INSTALLING WE NEED TO MAKE SURE ALL PODS IN kube-system are ready
 #sleep 60
-sudo mkdir -p /development/grafana
+$GRAFANAPATH=/development/grafana
+
+if [[ ! -d "$GRAFANAPATH" ]]; then
+  sudo mkdir -p /development/grafana
+fi
 sudo chmod -R 2775 /development/grafana
 kubectl wait --for=condition=Ready pods --all -n kube-system --timeout=120s
 
